@@ -1,7 +1,18 @@
-if ('Notification' in window && Notification.permission === 'default') {
-  Notification.requestPermission();
+// --- Notification Permission Request (improved) ---
+if ('Notification' in window) {
+  // If permission is default, request it.
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().then(permission => {
+      // Optional: Log or handle user's choice
+      console.log('Notification permission:', permission);
+    });
+  } else {
+    // Optional: Log current permission
+    console.log('Notification permission:', Notification.permission);
+  }
 }
-// Navigation logic
+
+// --- Navigation logic ---
 const navItems = document.querySelectorAll('nav li');
 const sections = document.querySelectorAll('main section');
 navItems.forEach(item => {
@@ -24,7 +35,7 @@ navItems.forEach(item => {
 sections.forEach(section => section.classList.remove('visible'));
 document.getElementById('dashboard').classList.add('visible');
 
-// Mood advice
+// --- Mood advice ---
 const moodSelect = document.getElementById('moodSelect');
 const moodAdvice = document.getElementById('moodAdvice');
 const advice = {
@@ -37,7 +48,7 @@ moodSelect.addEventListener('change', function() {
   moodAdvice.textContent = advice[moodSelect.value];
 });
 
-// Plant companion
+// --- Plant companion logic ---
 const plantImage = document.getElementById('plantImage');
 const plantStatus = document.getElementById('plantStatus');
 const scanNowBtn = document.getElementById('scanNowBtn');
