@@ -2559,8 +2559,11 @@ const breakReminders = document.getElementById('breakReminders');
 const declutterGoal = document.getElementById('declutterGoal');
 const goalProgress = document.getElementById('goalProgress');
 const wellnessTip = document.getElementById('wellnessTip');
+
+// --- BREAK REMINDER NOTIFICATION LOGIC (FIXED & CONSOLIDATED) ---
 let breakReminderTimer = null;
-const BREAK_INTERVAL_MINUTES = 1; 
+const BREAK_INTERVAL_MINUTES = 1; // Change to 0.05 for testing (3 seconds)
+
 function startBreakReminderLoop() {
   // Always clear any previous timer
   if (breakReminderTimer) clearInterval(breakReminderTimer);
@@ -2569,23 +2572,40 @@ function startBreakReminderLoop() {
 
   // Request notification permission if needed
   if ('Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission();
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        // Immediately send the first notification after granting
+        sendBreakNotification();
+      }
+    });
   }
 
   // Set up the interval to send notifications
   breakReminderTimer = setInterval(() => {
-    if (Notification.permission === 'granted') {
-      new Notification("🌿 Time for a break!", {
-        body: "Step away for a few minutes and stretch. Your digital plant thanks you!",
-        icon: "plant3.png" // Make sure this image exists in your repo
-      });
-    }
+    sendBreakNotification();
   }, BREAK_INTERVAL_MINUTES * 60 * 1000);
 }
+
+function sendBreakNotification() {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification("🌿 Time for a break!", {
+      body: "Step away for a few minutes and stretch. Your digital plant thanks you!",
+      icon: "plant3.png" // Make sure this image exists in your repo
+    });
+  }
+}
+
+// Listen for toggle changes
 breakReminders.addEventListener('change', () => {
   localStorage.setItem('breakReminders', breakReminders.checked ? "1" : "0");
-  startBreakReminderLoop();
+  if (breakReminders.checked) {
+    startBreakReminderLoop();
+  } else {
+    if (breakReminderTimer) clearInterval(breakReminderTimer);
+    breakReminderTimer = null;
+  }
 });
+
 // Restore setting on page load
 if (localStorage.getItem('breakReminders') === "1") {
   breakReminders.checked = true;
@@ -2626,13 +2646,9 @@ declutterGoal.addEventListener('change', () => {
   localStorage.setItem('declutterGoal', goalFiles);
   updateWellnessUI();
 });
-breakReminders.addEventListener('change', () => {
-  localStorage.setItem('breakReminders', breakReminders.checked ? "1" : "0");
-  // Optionally, you could trigger notifications here if you wish
-});
-updateWellnessUI();
 
-// --- Customization Logic ---
+// (Removed duplicate breakReminders event listener - it's handled above)
+updateWellnessUI();// --- Customization Logic ---
 const quotes = [
   "Small steps grow big trees!",
   "Every tidy file is a fresh start.",
