@@ -2562,7 +2562,7 @@ const wellnessTip = document.getElementById('wellnessTip');
 
 // --- BREAK REMINDER NOTIFICATION LOGIC (FIXED & CONSOLIDATED) ---
 let breakReminderTimer = null;
-const BREAK_INTERVAL_MINUTES = 1; // Change to 0.05 for testing (3 seconds)
+const BREAK_INTERVAL_MINUTES = .5; // Change to 0.05 for testing (3 seconds)
 
 function startBreakReminderLoop() {
   // Always clear any previous timer
