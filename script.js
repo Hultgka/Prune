@@ -2548,6 +2548,38 @@ const breakReminders = document.getElementById('breakReminders');
 const declutterGoal = document.getElementById('declutterGoal');
 const goalProgress = document.getElementById('goalProgress');
 const wellnessTip = document.getElementById('wellnessTip');
+let breakReminderTimer = null;
+const BREAK_INTERVAL_MINUTES = 1; 
+function startBreakReminderLoop() {
+  // Always clear any previous timer
+  if (breakReminderTimer) clearInterval(breakReminderTimer);
+  // Only start if the checkbox is checked
+  if (!breakReminders.checked) return;
+
+  // Request notification permission if needed
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Set up the interval to send notifications
+  breakReminderTimer = setInterval(() => {
+    if (Notification.permission === 'granted') {
+      new Notification("🌿 Time for a break!", {
+        body: "Step away for a few minutes and stretch. Your digital plant thanks you!",
+        icon: "plant3.png" // Make sure this image exists in your repo
+      });
+    }
+  }, BREAK_INTERVAL_MINUTES * 60 * 1000);
+}
+breakReminders.addEventListener('change', () => {
+  localStorage.setItem('breakReminders', breakReminders.checked ? "1" : "0");
+  startBreakReminderLoop();
+});
+// Restore setting on page load
+if (localStorage.getItem('breakReminders') === "1") {
+  breakReminders.checked = true;
+  startBreakReminderLoop();
+}
 
 // Customization variables
 const themePicker = document.getElementById('themePicker');
