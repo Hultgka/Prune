@@ -386,11 +386,14 @@ footer {
   z-index: 3;
   min-height: 0;
 }
-.plant-companion {
+.plant-container {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 1.2rem;
 }
 .plant-img {
   width: 100px;
@@ -398,7 +401,9 @@ footer {
   object-fit: contain;
   transition: transform 0.3s;
   background: none;
-  box-shadow: 0 0 12px #a23e4840;
+  box-shadow: none;
+  display: block;
+  margin: 0 auto;
 }
 .plant-img.grow {
   animation: bounce-grow 0.4s;
