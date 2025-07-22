@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prune - Your Cleanup Companion</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    #mediaCleanerArea .media-filters,
+    #mediaCleanerArea .bulk-actions {
+      display: flex; flex-direction: column; gap: 0.6em; margin-bottom: 1em;
+    }
+    #mediaCleanerArea .filter-row {
+      display: flex; align-items: center; gap: 1em; flex-wrap: wrap;
+    }
+    #mediaCleanerArea .storage-bar {
+      margin-bottom: 1em;
+    }
+    #mediaCleanerArea .storage-progress-bar {
+      background: #eee; border-radius: 8px; height: 18px; margin: 0.3em 0;
+    }
+    #mediaCleanerArea .storage-progress-fill {
+      background: #8f8; border-radius: 8px; height: 18px;
+    }
+    #mediaCleanerArea .bulk-actions {
+      display: flex; flex-wrap: wrap; gap: 1em;
+    }
+    #mediaCleanerArea .selection-buttons,
+    #mediaCleanerArea .action-buttons {
+      display: flex; gap: 0.5em;
+    }
+    #mediaCleanerArea .media-group {
+      background: #f6f7fa; border-radius: 12px; padding: 1em; margin-bottom: 1.5em;
+    }
+    #mediaCleanerArea .media-thumb {
+      display: flex; align-items: center; gap: 0.5em; margin-bottom: 0.7em;
+    }
+    #mediaCleanerArea .media-thumb img {
+      border-radius: 8px;
+    }
+    #mediaCleanerArea .media-thumb input[type=checkbox] {
+      margin-top: 0;
+    }
+    #mediaCleanerArea .folder-select,
+    #mediaCleanerArea .media-thumb button,
+    #mediaCleanerArea .media-thumb select {
+      margin-left: 0.2em;
+    }
+    #mediaCleanerArea .media-thumbs {
+      display: flex; flex-wrap: wrap; gap: 1em;
+    }
+    #mediaCleanerArea .media-thumb span {
+      min-width: 60px;
+    }
+    #mediaCleanerArea .media-filters label {
+      font-weight: 600;
+    }
+    #mediaCleanerArea .media-filters select,
+    #mediaCleanerArea .media-filters input[type=date] {
+      min-width: 110px;
+    }
+    #mediaCleanerArea { margin-top: 2em; }
+    #beforeAfterModal {
+      display:none;
+      position:fixed;
+      top:0; left:0; width:100vw; height:100vh;
+      z-index:9999;
+      background:rgba(40,60,40,0.95);
+      justify-content:center;
+      align-items:center;
+    }
+    #beforeAfterContent {
+      background:#f6fff5;
+      border-radius:18px;
+      padding:2em 2.5em;
+      box-shadow:0 4px 24px #0b2a0f33;
+      max-width:90vw;
+    }
+    #beforeAfterAnimation {
+      display:flex;
+      gap:2.5em;
+      justify-content:center;
+      align-items:flex-end;
+      min-height:220px;
+      margin:2em 0;
+    }
+    .social-share-bar {
+      display: flex;
+      gap: 0.5em;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1em;
+    }
+    .social-share-btn {
+      width: 2.5em;
+      height: 2.5em;
+      border-radius: 50%;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: filter 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      padding: 0;
+    }
+    .social-share-btn svg {
+      width: 2.1em;
+      height: 2.1em;
+      display: block;
+    }
+    .social-share-btn:hover {
+      filter: brightness(1.20) drop-shadow(0 2px 8px rgba(53,122,56,0.13));
+    }
+    #copy-confirm-check {
+      display: none;
+      margin-left: 0.3em;
+      font-size: 1.4em;
+      vertical-align: middle;
+      color: #357a38;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <img id="logo" src="https://via.placeholder.com/80x80?text=Prune" alt="Prune logo" />
+    <div class="header-titles">
+      <h1>Prune</h1>
+      <p>Your gentle computer cleanup companion</p>
+    </div>
+  </header>
+  <div class="container">
+    <nav>
+      <ul>
+        <li class="active" data-section="dashboard">Dashboard</li>
+        <li data-section="scan">Scan & Cleanup</li>
+        <li data-section="organize">Organize Desktop</li>
+        <li data-section="programs">Programs & Shortcuts</li>
+        <li data-section="media">Media Cleaner</li>
+        <li data-section="reports">Reports</li>
+        <li data-section="settings">Settings</li>
+      </ul>
+    </nav>
+    <main>
+     <section id="dashboard" class="visible">
+  <h2>Welcome to Prune!</h2>
+  <div class="dashboard-flex" style="display: flex; gap: 2em; align-items: flex-start;">
+    <!-- Digital Wellness Block -->
+    <div class="wellness-box" style="flex: 1; min-width: 220px;">
+      <h3>Digital Wellness</h3>
+      <div id="lastPruneMsg"></div>
+      <label>
+        <input type="checkbox" id="breakReminders">
+        Enable break reminders
+      </label>
+      <div style="margin-top: 0.8em;">
+        <label for="declutterGoal">Today's declutter goal:</label>
+        <select id="declutterGoal">
+          <option value="3">Tidy 3 files</option>
+          <option value="5">Tidy 5 files</option>
+          <option value="10">Tidy 10 files</option>
+        </select>
+        <div id="goalProgress">0/3 files tidied</div>
+      </div>
+      <div class="wellness-tip" id="wellnessTip" style="margin-top:1em;font-style:italic;color:#357a38;"></div>
+    </div>
+    <!-- Customization Block -->
+    <div class="customize-box" style="flex: 1; min-width: 220px;">
+      <h3>Customize Your Experience</h3>
+      <label for="themePicker">Choose Plant/Theme:</label>
+      <select id="themePicker">
+        <option value="classic">Classic Plant</option>
+        <option value="bonsai">Bonsai</option>
+        <option value="cactus">Cactus</option>
+        <option value="flower">Flower</option>
+      </select>
+      <div class="quote-box" style="margin-top:1em;">
+        <blockquote id="motivationalQuote" style="margin:0;font-size:1.1em;">"Small steps grow big trees!"</blockquote>
+        <button id="nextQuoteBtn" style="margin-top:0.5em;">Next Quote</button>
+      </div>
+      <div id="unlockables" style="margin-top:1em;"></div>
+    </div>
+  </div>
+  <div class="mood-box">
+    <label for="moodSelect">How are you feeling?</label>
+    <select id="moodSelect">
+      <option value="neutral">😊 Neutral</option>
+      <option value="overwhelmed">😰 Overwhelmed</option>
+      <option value="chill">😌 Chill</option>
+      <option value="motivated">💪 Motivated</option>
+    </select>
+  </div>
+  <div id="moodAdvice" class="mood-advice">
+    <p>Select your mood for gentle, tailored advice.</p>
+  </div>
+  <div class="scan-row">
+    <button class="prune-btn primary" id="scanNowBtn">Scan Now</button>
+  </div>
+</section>
+      <section id="scan">
+        <h2>Scan & Cleanup</h2>
+        <p>Scan your computer for clutter and remove unwanted files.</p>
+        <div id="schedulerCard" class="scheduler-card">
+          <div class="scheduler-header">
+            <span class="scheduler-plant">🌱</span>
+            <span class="scheduler-title">Cleanup Scheduler</span>
+            <span class="scheduler-sprinkle">✨</span>
+          </div>
+          <div class="scheduler-content">
+            <div class="scheduler-row">
+              <div class="scheduler-group">
+                <label class="switch-label">
+                  <input type="checkbox" id="reminderToggle" />
+                  <span class="switch-slider"></span>
+                  <span class="switch-text">Reminders</span>
+                </label>
+                <div class="scheduler-controls">
+                  <select id="reminderFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="custom">Custom Days</option>
+                  </select>
+                  <span id="customReminderDays" style="display:none;">
+                    <input type="number" min="1" max="365" id="reminderDaysInput" value="3" style="width:3em;" /> days
+                  </span>
+                </div>
+                <span id="nextReminderMsg" class="scheduler-nextmsg">Reminders are off</span>
+              </div>
+              <div class="scheduler-group">
+                <label class="switch-label">
+                  <input type="checkbox" id="autoCleanupToggle" />
+                  <span class="switch-slider"></span>
+                  <span class="switch-text">Auto-Cleanup</span>
+                </label>
+                <div class="scheduler-controls">
+                  <select id="autoCleanupFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="custom">Custom Days</option>
+                  </select>
+                  <span id="customAutoDays" style="display:none;">
+                    <input type="number" min="1" max="365" id="autoDaysInput" value="7" style="width:3em;" /> days
+                  </span>
+                </div>
+                <span id="nextAutoMsg" class="scheduler-nextmsg">Auto-Cleanup is off</span>
+              </div>
+            </div>
+            <div class="scheduler-funmsg" id="schedulerFunMsg"></div>
+          </div>
+        </div>
+        <div id="scanArea">
+          <button class="prune-btn primary" id="startScanBtn">Start Scan</button>
+          <div id="scanProgressBox" style="display:none; margin-top:2rem;">
+            <div id="scanSpinner" class="scan-spinner" style="display:none;">
+              <div class="spinner"></div>
+            </div>
+            <div class="progress-bar">
+              <div id="scanProgressBar" class="scan-progress"></div>
+            </div>
+            <div id="scanProgressStatus" style="margin-top:0.8rem;color:var(--mauve);"></div>
+          </div>
+          <div id="selectControls" style="display:none; margin-top:1.2rem; margin-bottom:0.9rem;">
+            <button type="button" class="prune-btn secondary small-btn" id="selectAllBtn">Select All</button>
+            <button type="button" class="prune-btn secondary small-btn" id="deselectAllBtn">Deselect All</button>
+          </div>
+          <div id="criteriaControls" style="display:none; margin-bottom:1.2rem;">
+            <label for="criteriaSelect" style="margin-right:1rem;">Select by Criteria:</label>
+            <select id="criteriaSelect">
+              <option value="">Choose...</option>
+              <option value="older1y">Files older than 1 year</option>
+              <option value="images10mb">Images over 10 MB</option>
+              <option value="videos">All videos</option>
+              <option value="smallfiles">Deselect files smaller than 1 MB</option>
+              <option value="recommended">Select all recommended</option>
+              <option value="notaccessed365">Files not accessed in last 365 days</option>
+              <option value="emptyfolders">Empty folders</option>
+            </select>
+          </div>
+          <div id="filterSortControls" style="display:none; margin-top:2.2rem;">
+            <label for="fileTypeFilter" style="margin-right:1rem;">Filter:</label>
+            <select id="fileTypeFilter">
+              <option value="all">All Types</option>
+              <option value="image">Images</option>
+              <option value="video">Videos</option>
+              <option value="pdf">PDFs</option>
+              <option value="ppt">Presentations</option>
+              <option value="txt">Text Files</option>
+              <option value="archive">Archives</option>
+              <option value="exe">Applications</option>
+              <option value="other">Other</option>
+              <option value="duplicates">Duplicates</option>
+            </select>
+            <label for="fileSortOrder" style="margin-left:2rem; margin-right:1rem;">Sort:</label>
+            <select id="fileSortOrder">
+              <option value="largest">Largest First</option>
+              <option value="smallest">Smallest First</option>
+              <option value="az">A-Z</option>
+              <option value="za">Z-A</option>
+            </select>
+          </div>
+          <form id="scanResultsBox" style="display:none; margin-top:2rem;">
+            <h3>Clutter found!</h3>
+            <ul id="clutterFilesList"></ul>
+            <button class="prune-btn danger" id="cleanSelectedBtn" type="submit">Clean Selected Files</button>
+          </form>
+          <div id="scanSummaryBox" style="display:none; margin-top:2rem; color:var(--deep-purple);">
+            <button class="prune-btn secondary undo-btn" id="undoCleanBtn" style="display:none; margin-top:1.2rem;">Undo</button>
+            <button class="prune-btn secondary" id="showBeforeAfterBtnScan" style="display:none; margin-top:1em;">Show Before & After</button>
+          </div>
+        </div>
+      </section>
+      <section id="organize">
+        <h2>Organize Desktop</h2>
+        <p>Organize your desktop files for a cleaner space.</p>
+        <div id="organizeControls" style="margin-bottom:1.2rem;">
+          <label for="organizePresetSelect">Preset:</label>
+          <select id="organizePresetSelect"></select>
+          <label for="organizeExcludeInput">Exclude files containing:</label>
+          <input type="text" id="organizeExcludeInput" placeholder="e.g. Shortcut" />
+          <label for="organizeAnimationToggle">
+            <input type="checkbox" id="organizeAnimationToggle" checked>
+          </label>
+          <label for="organizeSoundToggle">
+            <input type="checkbox" id="organizeSoundToggle" checked>
+          </label>
+          <button class="prune-btn small-btn" id="createFolderBtn">Create Folder</button>
+        </div>
+        <div id="organizePreviewList"></div>
+        <div id="desktopGridContainer"></div>
+        <button class="prune-btn primary" id="organizeConfirmBtn">Auto-Tidy</button>
+        <button class="prune-btn secondary" id="organizeUndoBtn" style="display:none;">Undo</button>
+        <button class="prune-btn secondary" id="showBeforeAfterBtn" style="display:none; margin-top:1em;">Show Before & After</button>
+        <div id="organizePlantReact"></div>
+        <div>
+          <h3>Desktop Snapshots</h3>
+          <ul id="organizeSnapshotList"></ul>
+        </div>
+      </section>
+      <section id="programs">
+        <h2>Program & Shortcut Organizer</h2>
+        <div id="programShortcutArea">
+          <!-- JS will render the controls, list, health meter, and modal here -->
+        </div>
+      </section>
+      <section id="media">
+        <h2>Media Cleaner</h2>
+        <p>Manage, organize, and clean up your photos, screenshots, and videos.</p>
+        <div id="mediaCleanerArea"></div>
+      </section>
+      <section id="reports">
+        <h2>Reports</h2>
+        <div id="reportsSummary"></div>
+        <div class="social-share-bar">
+          <a class="social-share-btn" title="Share on X"
+             href="https://twitter.com/intent/tweet?text=I%20just%20pruned%20my%20computer%20with%20Prune%20%F0%9F%8C%B1"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="20" fill="#357a38"/>
+              <path d="M25.4 13h3.9l-6.8 7.8L29.6 27h-3.9l-5.2-6-5.2 6H11l6.8-8-6.8-8h3.9l5.2 6 5.2-6z" fill="#fff"/>
+            </svg>
+          </a>
+          <a class="social-share-btn" title="Share on Facebook"
+             href="https://www.facebook.com/sharer/sharer.php?u=https://your-app-link.example.com"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="20" fill="#357a38"/>
+              <path d="M22.8 21.8h2.1l.3-2.4h-2.4V17c0-.7.2-1.1 1-1.1h1.4v-2.3c-.2 0-.9-.1-1.7-.1-2 0-2.8 1.2-2.8 2.7v1.6h-1.8v2.4h1.8v6.2h2.5v-6.2z" fill="#fff"/>
+            </svg>
+          </a>
+          <a class="social-share-btn" title="Share on LinkedIn"
+             href="https://www.linkedin.com/sharing/share-offsite/?url=https://your-app-link.example.com"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="20" fill="#357a38"/>
+              <path d="M13.9 29h-3V17.2h3V29zm-1.5-13.3c-1 0-1.7-.7-1.7-1.6 0-.9.7-1.6 1.7-1.6s1.7.7 1.7 1.6c0 .9-.7 1.6-1.7 1.6zm16.1 13.3h-3v-5.9c0-1.5-.5-2.5-1.9-2.5-1 0-1.5.7-1.8 1.4-.1.2-.1.6-.1.9V29h-3s.1-10.3 0-11.8h3v1.7c.4-.7 1.1-1.7 2.7-1.7 2 0 3.5 1.3 3.5 4.1V29z" fill="#fff"/>
+            </svg>
+          </a>
+          <button id="share-copy" class="social-share-btn" title="Copy Link" type="button">
+            <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="20" fill="#357a38"/>
+              <rect x="15" y="15" width="10" height="10" rx="2" stroke="#fff" stroke-width="2" fill="none"/>
+              <rect x="11" y="11" width="10" height="10" rx="2" stroke="#fff" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+          <span id="copy-confirm-check">✔️</span>
+        </div>
+        <div id="reportsCharts" style="margin: 2em 0;"></div>
+        <div id="reportsHistory"></div>
+        <button id="exportReportsBtn" class="prune-btn small-btn">Export Report</button>
+      </section>
+      <section id="settings">
+        <h2>Settings</h2>
+        <p>Change preferences for Prune.</p>
+      </section>
+    </main>
+    <aside class="plant-sidebar">
+      <div class="plant-companion">
+        <img id="plantImage" class="plant-img" src="plant0.png" alt="Prune Plant" />
+        <div id="plantStatus" class="plant-status">Your plant awaits some gentle care!</div>
+      </div>
+    </aside>
+  </div>
+  <div id="scanToast" class="scan-toast">
+    <div class="scan-toast-content">
+      <span class="close-scan-toast" id="closeScanToast">&times;</span>
+      <div id="scanToastInner">
+        <h4>Scanning your computer...</h4>
+        <div class="progress-bar">
+          <div id="scanToastProgress" class="scan-progress"></div>
+        </div>
+      </div>
+      <div id="scanToastSummary" class="scan-summary" style="display:none;">
+        <p><strong>Scan Complete!</strong></p>
+        <p id="scanToastResults"></p>
+        <button class="prune-btn primary" id="scanToastCleanNowBtn">Clean Now</button>
+      </div>
+    </div>
+  </div>
+  <div id="filePreviewModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="closePreviewModal">&times;</span>
+      <div id="modalPreviewBody"></div>
+    </div>
+  </div>
+  <div id="natureFireworks"></div>
+  <audio id="natureSound" src="nature.mp3"></audio>
+  <canvas id="natureConfettiCanvas" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:999;"></canvas>
+  <footer>
+    <small>v0.1 &copy; 2025 Hultgka</small>
+  </footer>
+  <script src="script.js"></script>
+  <div id="mediaDeleteModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:420px;">
+      <span class="close-modal" id="mediaDeleteModalClose" style="position:absolute; top:1em; right:1em; font-size:1.5em; cursor:pointer;">&times;</span>
+      <h3 id="mediaDeleteModalTitle">Delete Selected Items</h3>
+      <p id="mediaDeleteModalMsg"></p>
+      <div id="mediaDeletePreview" style="margin:1em 0;"></div>
+      <div style="display:flex; gap:0.7em; justify-content:flex-end; margin-top:1.1em;">
+        <button class="prune-btn secondary small-btn" id="mediaDeleteSlideshowBtn">Review as Slideshow</button>
+        <button class="prune-btn secondary small-btn" id="mediaDeleteCancelBtn">Cancel</button>
+        <button class="prune-btn danger small-btn" id="mediaDeleteConfirmBtn">Yes, Delete All</button>
+      </div>
+    </div>
+  </div>
+  <div id="beforeAfterModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:rgba(40,60,40,0.95);justify-content:center;align-items:center;">
+    <div id="beforeAfterContent" style="background:#f6fff5;border-radius:18px;padding:2em 2.5em;box-shadow:0 4px 24px #0b2a0f33;max-width:90vw;">
+      <h2 style="text-align:center;color:#357a38;">🌿 Before & After Pruning</h2>
+      <div id="beforeAfterAnimation" style="display:flex;gap:2.5em;justify-content:center;align-items:flex-end;min-height:220px;margin:2em 0;">
+        <!-- JS will fill in here -->
+      </div>
+      <button id="closeBeforeAfter" class="prune-btn" style="margin:0 auto;display:block;">Back to Desktop</button>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var copyBtn = document.getElementById('share-copy');
+      var checkSpan = document.getElementById('copy-confirm-check');
+      if (copyBtn && checkSpan) {
+        copyBtn.addEventListener('click', function() {
+          navigator.clipboard.writeText(window.location.href);
+          checkSpan.style.display = 'inline';
+          setTimeout(function() {
+            checkSpan.style.display = 'none';
+          }, 1000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
