@@ -108,6 +108,7 @@ function showScanToast() {
 }
 scanToastCleanNowBtn.addEventListener('click', () => {
   growPlant();
+  growSidebarPlant();
   scanToast.classList.remove('active');
 });
 closeScanToast.addEventListener('click', () => {
@@ -577,6 +578,7 @@ pruneHistory.push(Date.now());
 localStorage.setItem('pruneHistory', JSON.stringify(pruneHistory));
 updateWellnessUI();
   growPlant();
+  growSidebarPlant();
   showNatureFireworks(); // <--- Fireworks here!
 });
 
