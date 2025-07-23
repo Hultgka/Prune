@@ -126,6 +126,17 @@ closeScanToast.addEventListener('click', () => {
   scanToast.classList.remove('active');
 });
 
+// --- Seamlessly add the missing function here ---
+function growSidebarPlant() {
+  // This assumes you have a <img id="plantImage"> in your sidebar, and plantState is a global variable
+  const plantImage = document.getElementById('plantImage');
+  if (typeof plantState === 'undefined') window.plantState = 0;
+  plantState++;
+  if (plantState > 3) plantState = 3; // Clamp to max stage, adjust if you have more stages/images
+  plantImage.src = `plant${plantState}.png`;
+}
+// -----------------------------------------------
+
 // Scheduler
 const reminderToggle = document.getElementById('reminderToggle');
 const reminderFrequency = document.getElementById('reminderFrequency');
@@ -606,7 +617,6 @@ undoCleanBtn.addEventListener('click', () => {
 });
 undoCleanBtn.style.display = 'none';
 scanSummaryBox.appendChild(undoCleanBtn);
-
 // Modal preview logic
 function openPreviewModal(file) {
   filePreviewModal.style.display = 'block';
