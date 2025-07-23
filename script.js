@@ -2670,23 +2670,7 @@ themePicker.addEventListener('change', () => {
   localStorage.setItem('plantTheme', themePicker.value);
   // You could update the sidebar plant here based on themePicker.value!
 });
-document.getElementById('testBreakNotificationBtn').onclick = function() {
-  if ('Notification' in window) {
-    if (Notification.permission === "granted") {
-      new Notification("Test notification from Prune!", { body: "You should see this message." });
-    } else if (Notification.permission === "default") {
-      Notification.requestPermission().then(function(permission) {
-        if (permission === "granted") {
-          new Notification("Test notification from Prune!", { body: "Permission granted and this message should appear." });
-        } else {
-          alert("Notification permission was denied.");
-        }
-      });
-    } else {
-      alert("Notifications are blocked for this site.");
-    }
-  } else {
-    alert("This browser does not support notifications.");
+
 console.log("script.js loaded");
 
 const testBtn = document.getElementById('testBreakNotificationBtn');
