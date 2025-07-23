@@ -2686,6 +2686,35 @@ document.getElementById('testBreakNotificationBtn').onclick = function() {
       alert("Notifications are blocked for this site.");
     }
   } else {
-    alert("This browser does not support notifications.");
+    alert("This browser doconsole.log("script.js loaded");
+
+const testBtn = document.getElementById('testBreakNotificationBtn');
+console.log("testBreakNotificationBtn found:", !!testBtn);
+
+if (testBtn) {
+  testBtn.onclick = function() {
+    console.log("Test Notification button clicked");
+    if ('Notification' in window) {
+      if (Notification.permission === "granted") {
+        new Notification("Test notification from Prune!", { body: "You should see this message." });
+      } else if (Notification.permission === "default") {
+        Notification.requestPermission().then(function(permission) {
+          if (permission === "granted") {
+            new Notification("Test notification from Prune!", { body: "Permission granted and this message should appear." });
+          } else {
+            alert("Notification permission was denied.");
+          }
+        });
+      } else {
+        alert("Notifications are blocked for this site.");
+      }
+    } else {
+      alert("This browser does not support notifications.");
+    }
+  };
+} else {
+  console.log("testBreakNotificationBtn is missing from the DOM.");
+}es not support notifications.");
   }
 };
+
