@@ -2686,7 +2686,8 @@ document.getElementById('testBreakNotificationBtn').onclick = function() {
       alert("Notifications are blocked for this site.");
     }
   } else {
-    alert("This browser doconsole.log("script.js loaded");
+    alert("This browser does not support notifications.");
+console.log("script.js loaded");
 
 const testBtn = document.getElementById('testBreakNotificationBtn');
 console.log("testBreakNotificationBtn found:", !!testBtn);
