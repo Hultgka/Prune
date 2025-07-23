@@ -2565,33 +2565,36 @@ let breakReminderTimer = null;
 const BREAK_INTERVAL_MINUTES = .5; // Change to 0.05 for testing (3 seconds)
 
 function startBreakReminderLoop() {
-  // Always clear any previous timer
   if (breakReminderTimer) clearInterval(breakReminderTimer);
-  // Only start if the checkbox is checked
-  if (!breakReminders.checked) return;
+  if (!breakReminders.checked) {
+    console.log('[BreakReminder] Reminders not enabled');
+    return;
+  }
 
-  // Request notification permission if needed
+  console.log('[BreakReminder] Setting up interval...');
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission().then(permission => {
+      console.log('[BreakReminder] Permission result:', permission);
       if (permission === 'granted') {
-        // Immediately send the first notification after granting
         sendBreakNotification();
       }
     });
   }
 
-  // Set up the interval to send notifications
   breakReminderTimer = setInterval(() => {
+    console.log('[BreakReminder] Timer fired');
     sendBreakNotification();
   }, BREAK_INTERVAL_MINUTES * 60 * 1000);
 }
 
 function sendBreakNotification() {
+  console.log('Sending notification. Permission:', Notification.permission);
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification("🌿 Time for a break!", {
       body: "Step away for a few minutes and stretch. Your digital plant thanks you!",
-      icon: "plant3.png" // Make sure this image exists in your repo
+      icon: "plant3.png"
     });
+    console.log('Notification sent!');
   }
 }
 
@@ -2599,6 +2602,9 @@ function sendBreakNotification() {
 breakReminders.addEventListener('change', () => {
   localStorage.setItem('breakReminders', breakReminders.checked ? "1" : "0");
   if (breakReminders.checked) {
+    if ('Notification' in window && Notification.permission === "granted") {
+      sendBreakNotification();
+    }
     startBreakReminderLoop();
   } else {
     if (breakReminderTimer) clearInterval(breakReminderTimer);
