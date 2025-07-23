@@ -2715,7 +2715,4 @@ if (testBtn) {
   };
 } else {
   console.log("testBreakNotificationBtn is missing from the DOM.");
-}es not support notifications.");
-  }
-};
-
+}
