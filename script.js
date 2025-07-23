@@ -2566,13 +2566,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Digital Wellness variables
 const lastPruneMsg = document.getElementById('lastPruneMsg');
 const breakReminders = document.getElementById('breakReminders');
+const breakReminderInterval = document.getElementById('breakReminderInterval');
 const declutterGoal = document.getElementById('declutterGoal');
 const goalProgress = document.getElementById('goalProgress');
 const wellnessTip = document.getElementById('wellnessTip');
 
-// --- BREAK REMINDER NOTIFICATION LOGIC (FIXED & CONSOLIDATED) ---
+// --- BREAK REMINDER NOTIFICATION LOGIC (USER-SETTABLE INTERVAL) ---
 let breakReminderTimer = null;
-const BREAK_INTERVAL_MINUTES = .5; // Change to 0.05 for testing (3 seconds)
 
 function startBreakReminderLoop() {
   if (breakReminderTimer) clearInterval(breakReminderTimer);
@@ -2581,7 +2581,11 @@ function startBreakReminderLoop() {
     return;
   }
 
-  console.log('[BreakReminder] Setting up interval...');
+  // Get user interval (minutes), fallback to 20 if blank or invalid
+  const minutes = parseInt(breakReminderInterval.value, 10) || 20;
+  const intervalMs = minutes * 60 * 1000;
+
+  console.log('[BreakReminder] Setting up interval:', minutes, 'minutes');
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission().then(permission => {
       console.log('[BreakReminder] Permission result:', permission);
@@ -2594,7 +2598,7 @@ function startBreakReminderLoop() {
   breakReminderTimer = setInterval(() => {
     console.log('[BreakReminder] Timer fired');
     sendBreakNotification();
-  }, BREAK_INTERVAL_MINUTES * 60 * 1000);
+  }, intervalMs);
 }
 
 function sendBreakNotification() {
@@ -2619,6 +2623,13 @@ breakReminders.addEventListener('change', () => {
   } else {
     if (breakReminderTimer) clearInterval(breakReminderTimer);
     breakReminderTimer = null;
+  }
+});
+
+// Listen for interval (number box) changes
+breakReminderInterval.addEventListener('change', () => {
+  if (breakReminders.checked) {
+    startBreakReminderLoop();
   }
 });
 
